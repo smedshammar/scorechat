@@ -1,0 +1,100 @@
+{
+  "077fc1f4-42aa-4f58-a374-57b9f84f23f4": {
+    "id": "077fc1f4-42aa-4f58-a374-57b9f84f23f4",
+    "tournamentId": "9b308816-9879-4f49-bba1-940ea8ca77e1",
+    "round": 1,
+    "gameType": "all-vs-all",
+    "teams": [
+      {
+        "id": "green",
+        "name": "Green Team",
+        "color": "#22c55e",
+        "players": [
+          "Christer Smedshammar",
+          "Anders Sandgren",
+          "Daniel Jönsson",
+          "Stefan Lindblad"
+        ]
+      },
+      {
+        "id": "blue",
+        "name": "Blue Team",
+        "color": "#3b82f6",
+        "players": [
+          "Kristian Anselius",
+          "Erik Qvist",
+          "Andreas Jörbeck"
+        ]
+      },
+      {
+        "id": "red",
+        "name": "Red Team",
+        "color": "#ef4444",
+        "players": [
+          "Henrik Jarpner",
+          "Fredrik Edwall",
+          "Johan Kökeritz"
+        ]
+      }
+    ],
+    "groupings": [
+      [
+        "Christer Smedshammar",
+        "Andreas Jörbeck",
+        "Johan Kökeritz"
+      ],
+      [
+        "Erik Qvist",
+        "Anders Sandgren",
+        "Fredrik Edwall"
+      ]
+    ],
+    "matches": [
+      {
+        "id": "20e01ca5-0a93-45fc-ad3d-196f362cda8a",
+        "sidegameId": "077fc1f4-42aa-4f58-a374-57b9f84f23f4",
+        "hole": 1,
+        "gameType": "all-vs-all",
+        "participants": [
+          "Christer Smedshammar",
+          "Andreas Jörbeck",
+          "Johan Kökeritz"
+        ],
+        "teamPoints": {
+          "green": 1,
+          "blue": 2,
+          "red": 0
+        },
+        "holeResults": {
+          "Christer Smedshammar": 2,
+          "Andreas Jörbeck": 3,
+          "Johan Kökeritz": 1
+        },
+        "timestamp": "2025-09-28T10:18:20.078Z"
+      },
+      {
+        "id": "662fa267-87ef-4332-8739-abc731d60fed",
+        "sidegameId": "077fc1f4-42aa-4f58-a374-57b9f84f23f4",
+        "hole": 2,
+        "gameType": "all-vs-all",
+        "participants": [
+          "Johan Kökeritz",
+          "Andreas Jörbeck",
+          "Christer Smedshammar"
+        ],
+        "teamPoints": {
+          "green": 0,
+          "blue": 1,
+          "red": 1
+        },
+        "holeResults": {
+          "Johan Kökeritz": 1,
+          "Andreas Jörbeck": 1,
+          "Christer Smedshammar": 0
+        },
+        "timestamp": "2025-09-28T10:30:50.628Z"
+      }
+    ],
+    "createdAt": "2025-09-28T10:17:51.341Z"
+  }
+}

@@ -1,0 +1,5 @@
+Generate code for the following project:
+- a web application that streams spoken golf scoring updates during play
+- stream the voice sound to a suitable LLM service that can combine the sound with a textual background context stating that the sound is a golf scoring update and suitable background data to improve the transcription of the scoring input
+- According to a defined schema converts the transcribed scoring input to scoring data
+- aggregates transcribed scoring data in a suitable way to generate scoreboard and leaderboard output according to a suitable scheme

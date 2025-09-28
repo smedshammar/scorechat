@@ -1,0 +1,32 @@
+{
+  "teams": {
+    "green": {
+      "name": "Green Team",
+      "color": "#22c55e",
+      "players": [
+        "Christer Smedshammar",
+        "Anders Sandgren",
+        "Daniel Jönsson",
+        "Stefan Lindblad"
+      ]
+    },
+    "blue": {
+      "name": "Blue Team",
+      "color": "#3b82f6",
+      "players": [
+        "Kristian Anselius",
+        "Erik Qvist",
+        "Andreas Jörbeck"
+      ]
+    },
+    "red": {
+      "name": "Red Team",
+      "color": "#ef4444",
+      "players": [
+        "Henrik Jarpner",
+        "Fredrik Edwall",
+        "Johan Kökeritz"
+      ]
+    }
+  }
+}
