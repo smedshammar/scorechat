@@ -13,7 +13,8 @@
     "start": "cd server && npm start"
   },
   "dependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "zod": "^3.22.4"
   },
   "devDependencies": {},
   "engines": {
