@@ -39,18 +39,17 @@ export class TranscriptionService {
     try {
       console.log('Starting audio transcription, buffer size:', audioBuffer.length, 'bytes');
 
-      // Create a file-like object for OpenAI API
-      const file = {
-        name: 'audio.webm',
-        type: 'audio/webm',
-        arrayBuffer: () => Promise.resolve(audioBuffer.buffer),
-        stream: () => new ReadableStream({
-          start(controller) {
-            controller.enqueue(audioBuffer);
-            controller.close();
-          }
-        })
-      } as any;
+      // Create a stream for OpenAI API - the OpenAI library expects this format
+      const { Readable } = require('stream');
+      const audioStream = new Readable({
+        read() {}
+      });
+      audioStream.push(audioBuffer);
+      audioStream.push(null); // End the stream
+
+      // Add required properties for OpenAI API
+      (audioStream as any).path = 'audio.webm';
+      (audioStream as any).name = 'audio.webm';
 
       console.log('Created file object for OpenAI API');
 
@@ -60,7 +59,7 @@ export class TranscriptionService {
         : '';
 
       const transcription = await this.openai.audio.transcriptions.create({
-        file: file,
+        file: audioStream,
         model: 'whisper-1',
         prompt: `This is a golf scoring update during live play. The speaker is reporting individual scores for consecutive holes, NOT phone numbers or codes. When hearing multiple scores like "four five three four", transcribe as separate numbers: "4 5 3 4" not "4-5-3-4". Golf context: Players are competing on an 18-hole course with standard par values.${playerContext}`,
         language: 'en',
