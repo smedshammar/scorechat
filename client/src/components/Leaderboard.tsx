@@ -46,12 +46,12 @@ const formatTotalScore = (entry: LeaderboardEntry): string => {
 
   if (entry.roundScores && entry.roundScores.length > 0) {
     // Add completed rounds
-    entry.roundScores.forEach(round => {
-      if (round.roundStrokes > 0 && round.holeScores.filter(s => s !== null).length === 18) {
+    entry.roundScores.forEach((round: { round: number; holeScores: (number | null)[]; stablefordPoints: (number | null)[]; roundStrokes: number; roundStablefordPoints: number }) => {
+      if (round.roundStrokes > 0 && round.holeScores.filter((s: number | null) => s !== null).length === 18) {
         // Only count completed rounds (18 holes)
         const roundPar = 72; // Standard par for 18 holes
         totalScore += (round.roundStrokes - roundPar);
-      } else if (round.holeScores.filter(s => s !== null).length > 0) {
+      } else if (round.holeScores.filter((s: number | null) => s !== null).length > 0) {
         // This round is in progress, so currentScore represents this round
         hasCurrentRoundInProgress = true;
       }
@@ -70,7 +70,7 @@ const formatTotalScore = (entry: LeaderboardEntry): string => {
 const formatRoundStableford = (entry: LeaderboardEntry): string => {
   // Current round stableford: points so far - (2 * holes played)
   const currentRoundPoints = entry.stablefordPoints?.slice(0, entry.holesCompleted)
-    .reduce((sum, points) => (sum || 0) + (points || 0), 0) || 0;
+    .reduce((sum: number, points: number | null) => (sum || 0) + (points || 0), 0) || 0;
   const expectedPoints = entry.holesCompleted * 2;
   const stablefordVsPar = currentRoundPoints - expectedPoints;
 
@@ -86,11 +86,11 @@ const formatTotalStableford = (entry: LeaderboardEntry): string => {
   let hasCurrentRoundInProgress = false;
 
   if (entry.roundScores && entry.roundScores.length > 0) {
-    entry.roundScores.forEach(round => {
-      if (round.holeScores.filter(s => s !== null).length === 18) {
+    entry.roundScores.forEach((round: { round: number; holeScores: (number | null)[]; stablefordPoints: (number | null)[]; roundStrokes: number; roundStablefordPoints: number }) => {
+      if (round.holeScores.filter((s: number | null) => s !== null).length === 18) {
         totalStableford += round.roundStablefordPoints;
         completedRounds += 1;
-      } else if (round.holeScores.filter(s => s !== null).length > 0) {
+      } else if (round.holeScores.filter((s: number | null) => s !== null).length > 0) {
         // This round is in progress, so current stableford represents this round
         hasCurrentRoundInProgress = true;
       }
@@ -105,7 +105,7 @@ const formatTotalStableford = (entry: LeaderboardEntry): string => {
   // or if there are no roundScores yet (first round in progress)
   if (!hasCurrentRoundInProgress || !entry.roundScores || entry.roundScores.length === 0) {
     const currentRoundPoints = entry.stablefordPoints?.slice(0, entry.holesCompleted)
-      .reduce((sum, points) => (sum || 0) + (points || 0), 0) || 0;
+      .reduce((sum: number, points: number | null) => (sum || 0) + (points || 0), 0) || 0;
     const currentExpected = entry.holesCompleted * 2;
     const currentRoundStableford = currentRoundPoints - currentExpected;
     totalStableford += currentRoundStableford;
@@ -122,8 +122,8 @@ const calculateOnTheMove = (entry: LeaderboardEntry): { difference: number; next
   }
 
   // Find completed rounds (18 holes)
-  const completedRounds = entry.roundScores.filter(round =>
-    round.holeScores.filter(s => s !== null).length === 18
+  const completedRounds = entry.roundScores.filter((round: { round: number; holeScores: (number | null)[]; stablefordPoints: (number | null)[]; roundStrokes: number; roundStablefordPoints: number }) =>
+    round.holeScores.filter((s: number | null) => s !== null).length === 18
   );
 
   if (completedRounds.length === 0) {
@@ -132,16 +132,16 @@ const calculateOnTheMove = (entry: LeaderboardEntry): { difference: number; next
 
   // Calculate current round strokes for played holes
   const currentHoleStrokes = entry.holeScores?.slice(0, entry.holesCompleted)
-    .reduce((sum, strokes) => (sum || 0) + (strokes || 0), 0) || 0;
+    .reduce((sum: number, strokes: number | null) => (sum || 0) + (strokes || 0), 0) || 0;
 
   // Find worst completed round up to same number of holes
   let worstRoundStrokes = 0;
   let worstRoundNextHole = 0;
   let maxStrokes = -1;
 
-  completedRounds.forEach(round => {
+  completedRounds.forEach((round: { round: number; holeScores: (number | null)[]; stablefordPoints: (number | null)[]; roundStrokes: number; roundStablefordPoints: number }) => {
     const strokesUpToHole = round.holeScores.slice(0, entry.holesCompleted)
-      .reduce((sum, strokes) => (sum || 0) + (strokes || 0), 0);
+      .reduce((sum: number, strokes: number | null) => (sum || 0) + (strokes || 0), 0);
 
     if ((strokesUpToHole || 0) > maxStrokes) {
       maxStrokes = strokesUpToHole || 0;
@@ -168,9 +168,9 @@ const getRoundSummaryData = (entry: LeaderboardEntry) => {
 
   // Add completed rounds
   if (entry.roundScores) {
-    entry.roundScores.forEach((round, index) => {
+    entry.roundScores.forEach((round: { round: number; holeScores: (number | null)[]; stablefordPoints: (number | null)[]; roundStrokes: number; roundStablefordPoints: number }, index: number) => {
       if (index < maxRounds) {
-        const isCompleted = round.holeScores.filter(s => s !== null).length === 18;
+        const isCompleted = round.holeScores.filter((s: number | null) => s !== null).length === 18;
         rounds.push({
           roundNumber: round.round,
           strokes: isCompleted ? round.roundStrokes : null,
@@ -182,14 +182,14 @@ const getRoundSummaryData = (entry: LeaderboardEntry) => {
   }
 
   // Add current round if it's not already included
-  const currentRound = entry.roundScores?.find(r => r.round === (entry.totalRounds || 1));
+  const currentRound = entry.roundScores?.find((r: { round: number; holeScores: (number | null)[]; stablefordPoints: (number | null)[]; roundStrokes: number; roundStablefordPoints: number }) => r.round === (entry.totalRounds || 1));
   if (!currentRound && entry.holesCompleted > 0 && rounds.length < maxRounds) {
     const currentRoundStrokes = entry.holeScores?.slice(0, entry.holesCompleted)
-      .reduce((sum, strokes) => (sum || 0) + (strokes || 0), 0) || 0;
+      .reduce((sum: number, strokes: number | null) => (sum || 0) + (strokes || 0), 0) || 0;
     const currentRoundPoints = entry.stablefordPoints?.slice(0, entry.holesCompleted)
-      .reduce((sum, points) => (sum || 0) + (points || 0), 0) || 0;
+      .reduce((sum: number, points: number | null) => (sum || 0) + (points || 0), 0) || 0;
     const currentPar = entry.holePars?.slice(0, entry.holesCompleted)
-      .reduce((sum, par) => sum + par, 0) || (entry.holesCompleted * 4); // Estimate par
+      .reduce((sum: number, par: number) => sum + par, 0) || (entry.holesCompleted * 4); // Estimate par
 
     const currentVsPar = currentRoundStrokes - currentPar;
     const currentVsExpected = currentRoundPoints - (entry.holesCompleted * 2);
@@ -244,7 +244,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ leaderboard }) => {
   });
 
   // Update positions based on sort order
-  sortedLeaderboard.forEach((entry, index) => {
+  sortedLeaderboard.forEach((entry: LeaderboardEntry, index: number) => {
     entry.position = index + 1;
   });
 
@@ -277,7 +277,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ leaderboard }) => {
           <div className="expand">Details</div>
         </div>
 
-        {sortedLeaderboard.map((entry, index) => (
+        {sortedLeaderboard.map((entry: LeaderboardEntry, index: number) => (
           <div key={entry.playerId} className="player-section">
             <div className={`leaderboard-row ${index === 0 ? 'leader' : ''}`}>
               <div className="pos">{entry.position}</div>
@@ -313,14 +313,14 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ leaderboard }) => {
                   <h4>Round Summary</h4>
                   <div className="round-summary-table">
                     <div className="round-header-row">
-                      {getRoundSummaryData(entry).map((round) => (
+                      {getRoundSummaryData(entry).map((round: any) => (
                         <div key={round.roundNumber} className="round-header">
                           R{round.roundNumber}
                         </div>
                       ))}
                     </div>
                     <div className="round-strokes-row">
-                      {getRoundSummaryData(entry).map((round) => (
+                      {getRoundSummaryData(entry).map((round: any) => (
                         <div key={`strokes-${round.roundNumber}`} className="round-cell">
                           {round.isCompleted ? round.strokes :
                            round.currentVsPar !== undefined ?
@@ -330,7 +330,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ leaderboard }) => {
                       ))}
                     </div>
                     <div className="round-points-row">
-                      {getRoundSummaryData(entry).map((round) => (
+                      {getRoundSummaryData(entry).map((round: any) => (
                         <div key={`points-${round.roundNumber}`} className="round-cell">
                           {round.isCompleted ? round.points :
                            round.currentVsExpected !== undefined ?
@@ -357,8 +357,8 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ leaderboard }) => {
                 {entry.roundScores && entry.totalRounds && entry.totalRounds > 1 ? (
                   // Multi-round display - only show rounds with data
                   entry.roundScores
-                    .filter(roundData => roundData.holeScores.some(score => score !== null))
-                    .map(roundData => (
+                    .filter((roundData: { round: number; holeScores: (number | null)[]; stablefordPoints: (number | null)[]; roundStrokes: number; roundStablefordPoints: number }) => roundData.holeScores.some((score: number | null) => score !== null))
+                    .map((roundData: { round: number; holeScores: (number | null)[]; stablefordPoints: (number | null)[]; roundStrokes: number; roundStablefordPoints: number }) => (
                     <div key={roundData.round} className="multi-round-scorecard">
                       <div className="scorecard-section">
                         <h4>Round {roundData.round} - Front 9</h4>
@@ -370,15 +370,15 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ leaderboard }) => {
                             <div className="hole-cell total-cell">OUT</div>
                           </div>
                           <div className="hole-row par-row">
-                            {(entry.holePars || []).slice(0, 9).map((par, i) => (
+                            {(entry.holePars || []).slice(0, 9).map((par: number, i: number) => (
                               <div key={i} className="hole-cell par-cell">{par}</div>
                             ))}
                             <div className="hole-cell total-cell">
-                              {(entry.holePars || []).slice(0, 9).reduce((sum, par) => sum + par, 0)}
+                              {(entry.holePars || []).slice(0, 9).reduce((sum: number, par: number) => sum + par, 0)}
                             </div>
                           </div>
                           <div className="hole-row score-row">
-                            {roundData.holeScores.slice(0, 9).map((score, i) => (
+                            {roundData.holeScores.slice(0, 9).map((score: number | null, i: number) => (
                               <div
                                 key={i}
                                 className={`hole-cell score-cell ${getScoreColor(score, (entry.holePars || [])[i])}`}
@@ -387,17 +387,17 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ leaderboard }) => {
                               </div>
                             ))}
                             <div className="hole-cell total-cell">
-                              {roundData.holeScores.slice(0, 9).reduce((sum, score) => (sum || 0) + (score || 0), 0) || '-'}
+                              {roundData.holeScores.slice(0, 9).reduce((sum: number, score: number | null) => (sum || 0) + (score || 0), 0) || '-'}
                             </div>
                           </div>
                           <div className="hole-row stableford-row">
-                            {roundData.stablefordPoints.slice(0, 9).map((points, i) => (
+                            {roundData.stablefordPoints.slice(0, 9).map((points: number | null, i: number) => (
                               <div key={i} className="hole-cell stableford-cell">
                                 <small>{points !== null && points !== undefined ? points : '-'}</small>
                               </div>
                             ))}
                             <div className="hole-cell total-cell">
-                              <small>{roundData.stablefordPoints.slice(0, 9).reduce((sum, points) => (sum || 0) + (points || 0), 0) || '-'}</small>
+                              <small>{roundData.stablefordPoints.slice(0, 9).reduce((sum: number, points: number | null) => (sum || 0) + (points || 0), 0) || '-'}</small>
                             </div>
                           </div>
                         </div>
@@ -413,15 +413,15 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ leaderboard }) => {
                             <div className="hole-cell total-cell">IN</div>
                           </div>
                           <div className="hole-row par-row">
-                            {(entry.holePars || []).slice(9, 18).map((par, i) => (
+                            {(entry.holePars || []).slice(9, 18).map((par: number, i: number) => (
                               <div key={i + 9} className="hole-cell par-cell">{par}</div>
                             ))}
                             <div className="hole-cell total-cell">
-                              {(entry.holePars || []).slice(9, 18).reduce((sum, par) => sum + par, 0)}
+                              {(entry.holePars || []).slice(9, 18).reduce((sum: number, par: number) => sum + par, 0)}
                             </div>
                           </div>
                           <div className="hole-row score-row">
-                            {roundData.holeScores.slice(9, 18).map((score, i) => (
+                            {roundData.holeScores.slice(9, 18).map((score: number | null, i: number) => (
                               <div
                                 key={i + 9}
                                 className={`hole-cell score-cell ${getScoreColor(score, (entry.holePars || [])[i + 9])}`}
@@ -430,17 +430,17 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ leaderboard }) => {
                               </div>
                             ))}
                             <div className="hole-cell total-cell">
-                              {roundData.holeScores.slice(9, 18).reduce((sum, score) => (sum || 0) + (score || 0), 0) || '-'}
+                              {roundData.holeScores.slice(9, 18).reduce((sum: number, score: number | null) => (sum || 0) + (score || 0), 0) || '-'}
                             </div>
                           </div>
                           <div className="hole-row stableford-row">
-                            {roundData.stablefordPoints.slice(9, 18).map((points, i) => (
+                            {roundData.stablefordPoints.slice(9, 18).map((points: number | null, i: number) => (
                               <div key={i + 9} className="hole-cell stableford-cell">
                                 <small>{points !== null && points !== undefined ? points : '-'}</small>
                               </div>
                             ))}
                             <div className="hole-cell total-cell">
-                              <small>{roundData.stablefordPoints.slice(9, 18).reduce((sum, points) => (sum || 0) + (points || 0), 0) || '-'}</small>
+                              <small>{roundData.stablefordPoints.slice(9, 18).reduce((sum: number, points: number | null) => (sum || 0) + (points || 0), 0) || '-'}</small>
                             </div>
                           </div>
                         </div>
@@ -471,15 +471,15 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ leaderboard }) => {
                       <div className="hole-cell total-cell">OUT</div>
                     </div>
                     <div className="hole-row par-row">
-                      {entry.holePars.slice(0, 9).map((par, i) => (
+                      {entry.holePars.slice(0, 9).map((par: number, i: number) => (
                         <div key={i} className="hole-cell par-cell">{par}</div>
                       ))}
                       <div className="hole-cell total-cell">
-                        {entry.holePars.slice(0, 9).reduce((sum, par) => sum + par, 0)}
+                        {entry.holePars.slice(0, 9).reduce((sum: number, par: number) => sum + par, 0)}
                       </div>
                     </div>
                     <div className="hole-row score-row">
-                      {entry.holeScores.slice(0, 9).map((score, i) => (
+                      {entry.holeScores.slice(0, 9).map((score: number | null, i: number) => (
                         <div
                           key={i}
                           className={`hole-cell score-cell ${getScoreColor(score, (entry.holePars || [])[i])}`}
@@ -488,17 +488,17 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ leaderboard }) => {
                         </div>
                       ))}
                       <div className="hole-cell total-cell">
-                        {entry.holeScores.slice(0, 9).reduce((sum, score) => (sum || 0) + (score || 0), 0) || '-'}
+                        {entry.holeScores.slice(0, 9).reduce((sum: number, score: number | null) => (sum || 0) + (score || 0), 0) || '-'}
                       </div>
                     </div>
                     <div className="hole-row stableford-row">
-                      {(entry.stablefordPoints || []).slice(0, 9).map((points, i) => (
+                      {(entry.stablefordPoints || []).slice(0, 9).map((points: number | null, i: number) => (
                         <div key={i} className="hole-cell stableford-cell">
                           <small>{points !== null && points !== undefined ? points : '-'}</small>
                         </div>
                       ))}
                       <div className="hole-cell total-cell">
-                        <small>{(entry.stablefordPoints || []).slice(0, 9).reduce((sum, points) => (sum || 0) + (points || 0), 0) || '-'}</small>
+                        <small>{(entry.stablefordPoints || []).slice(0, 9).reduce((sum: number, points: number | null) => (sum || 0) + (points || 0), 0) || '-'}</small>
                       </div>
                     </div>
                   </div>
@@ -514,15 +514,15 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ leaderboard }) => {
                       <div className="hole-cell total-cell">IN</div>
                     </div>
                     <div className="hole-row par-row">
-                      {entry.holePars.slice(9, 18).map((par, i) => (
+                      {entry.holePars.slice(9, 18).map((par: number, i: number) => (
                         <div key={i + 9} className="hole-cell par-cell">{par}</div>
                       ))}
                       <div className="hole-cell total-cell">
-                        {entry.holePars.slice(9, 18).reduce((sum, par) => sum + par, 0)}
+                        {entry.holePars.slice(9, 18).reduce((sum: number, par: number) => sum + par, 0)}
                       </div>
                     </div>
                     <div className="hole-row score-row">
-                      {entry.holeScores.slice(9, 18).map((score, i) => (
+                      {entry.holeScores.slice(9, 18).map((score: number | null, i: number) => (
                         <div
                           key={i + 9}
                           className={`hole-cell score-cell ${getScoreColor(score, (entry.holePars || [])[i + 9])}`}
@@ -531,17 +531,17 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ leaderboard }) => {
                         </div>
                       ))}
                       <div className="hole-cell total-cell">
-                        {entry.holeScores.slice(9, 18).reduce((sum, score) => (sum || 0) + (score || 0), 0) || '-'}
+                        {entry.holeScores.slice(9, 18).reduce((sum: number, score: number | null) => (sum || 0) + (score || 0), 0) || '-'}
                       </div>
                     </div>
                     <div className="hole-row stableford-row">
-                      {(entry.stablefordPoints || []).slice(9, 18).map((points, i) => (
+                      {(entry.stablefordPoints || []).slice(9, 18).map((points: number | null, i: number) => (
                         <div key={i + 9} className="hole-cell stableford-cell">
                           <small>{points !== null && points !== undefined ? points : '-'}</small>
                         </div>
                       ))}
                       <div className="hole-cell total-cell">
-                        <small>{(entry.stablefordPoints || []).slice(9, 18).reduce((sum, points) => (sum || 0) + (points || 0), 0) || '-'}</small>
+                        <small>{(entry.stablefordPoints || []).slice(9, 18).reduce((sum: number, points: number | null) => (sum || 0) + (points || 0), 0) || '-'}</small>
                       </div>
                     </div>
                   </div>
