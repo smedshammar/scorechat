@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { LeaderboardEntry } from '../../../shared/types';
+import type { LeaderboardEntry } from '../types';
 
 interface LeaderboardProps {
   leaderboard: LeaderboardEntry[];

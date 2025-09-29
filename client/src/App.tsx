@@ -5,7 +5,7 @@ import { TeamLeaderboard } from './components/TeamLeaderboard';
 import { ScoreVerificationGrid } from './components/ScoreVerificationGrid';
 import { AdminPanel } from './components/AdminPanel';
 import { apiService } from './services/api';
-import type { LeaderboardEntry, WebSocketMessage, Tournament, ScoreEntry } from '../../shared/types';
+import type { LeaderboardEntry, WebSocketMessage, Tournament, ScoreEntry } from './types';
 import './App.css';
 
 interface PlayerScore {

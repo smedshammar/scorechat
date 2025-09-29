@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { Team, TeamSidegame, Tournament } from '../../../shared/types';
+import type { Team, TeamSidegame, Tournament } from '../types';
 
 interface TeamSidegameAdminProps {
   tournament: Tournament;

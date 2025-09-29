@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { TeamLeaderboardEntry, TeamSidegame } from '../../../shared/types';
+import type { TeamLeaderboardEntry, TeamSidegame } from '../types';
 
 interface TeamLeaderboardProps {
   tournament: any;

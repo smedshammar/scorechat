@@ -1,5 +1,5 @@
 import io, { Socket } from 'socket.io-client';
-import type { WebSocketMessage, Tournament, LeaderboardEntry } from '../../../shared/types';
+import type { WebSocketMessage, Tournament, LeaderboardEntry } from '../types';
 
 class ApiService {
   private socket: Socket | null = null;

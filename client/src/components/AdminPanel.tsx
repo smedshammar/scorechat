@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { RoundSelector } from './RoundSelector';
 import { TeamSidegameAdmin } from './TeamSidegameAdmin';
 import { apiService } from '../services/api';
-import type { Tournament } from '../../../shared/types';
+import type { Tournament } from '../types';
 
 interface AdminPanelProps {
   onBackToMain: () => void;
