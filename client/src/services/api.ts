@@ -6,8 +6,8 @@ class ApiService {
   private isInitializing: boolean = false;
 
   initializeSocket(serverUrl?: string): Socket | null {
-    // Disable Socket.IO in production (Vercel) since it requires persistent WebSocket server
-    if (window.location.hostname !== 'localhost') {
+    // Only disable Socket.IO on Vercel (vercel.app domains)
+    if (window.location.hostname.includes('vercel.app')) {
       return null;
     }
 

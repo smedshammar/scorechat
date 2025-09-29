@@ -33,10 +33,17 @@ function App() {
     const socket = apiService.initializeSocket();
 
     if (!socket) {
-      // Socket.IO disabled in production, use HTTP-only mode
-      setConnectionStatus('connected'); // Show as connected since HTTP API is working
-      setError(null);
-      return;
+      // Socket.IO disabled on Vercel, use HTTP-only mode
+      if (window.location.hostname.includes('vercel.app')) {
+        setConnectionStatus('connected'); // Show as connected since HTTP API is working
+        setError(null);
+        return;
+      } else {
+        // On other platforms, this indicates a real error
+        setConnectionStatus('disconnected');
+        setError('Failed to initialize connection');
+        return;
+      }
     }
 
     socket.on('connect', () => {
