@@ -533,7 +533,8 @@ const possiblePaths = [
   path.resolve(__dirname, '../../../client/dist'),  // Local development
   path.resolve(__dirname, '../../client/dist'),     // Railway build
   path.resolve(__dirname, '../client/dist'),        // Alternative
-  path.resolve(process.cwd(), 'client/dist')        // From project root
+  path.resolve(process.cwd(), 'client/dist'),       // From project root
+  '/app/client/dist'                                 // Railway absolute path
 ];
 
 let clientBuildPath = possiblePaths[0];
