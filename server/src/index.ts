@@ -19,7 +19,7 @@ import type { WebSocketMessage, ScoreEntry } from './types';
 const app = express();
 const server = createServer(app);
 const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? ['https://your-app-name.vercel.app'] // You'll update this with actual Vercel URL
+  ? ['*'] // Allow all origins in production for Cloud Run
   : ['http://localhost:5173', 'http://localhost:3000'];
 
 const io = new SocketIOServer(server, {
