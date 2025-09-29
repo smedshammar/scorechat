@@ -39,11 +39,20 @@ export class TranscriptionService {
     try {
       console.log('Starting audio transcription, buffer size:', audioBuffer.length, 'bytes');
 
-      // Convert buffer to blob for better compatibility
-      const audioBlob = new Blob([audioBuffer], { type: 'audio/webm' });
-      const file = new File([audioBlob], 'audio.webm', { type: 'audio/webm' });
+      // Create a file-like object for OpenAI API
+      const file = {
+        name: 'audio.webm',
+        type: 'audio/webm',
+        arrayBuffer: () => Promise.resolve(audioBuffer.buffer),
+        stream: () => new ReadableStream({
+          start(controller) {
+            controller.enqueue(audioBuffer);
+            controller.close();
+          }
+        })
+      } as any;
 
-      console.log('Created file object, size:', file.size, 'bytes, type:', file.type);
+      console.log('Created file object for OpenAI API');
 
       // Include player names in the prompt for better recognition
       const playerContext = playerNames.length > 0
