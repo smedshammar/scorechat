@@ -34,7 +34,8 @@ function App() {
 
     if (!socket) {
       // Socket.IO disabled in production, use HTTP-only mode
-      setConnectionStatus('disconnected');
+      setConnectionStatus('connected'); // Show as connected since HTTP API is working
+      setError(null);
       return;
     }
 
