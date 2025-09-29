@@ -1,8 +1,11 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
-// Load .env from project root
-dotenv.config({ path: path.resolve(__dirname, '../../../../.env') });
+// Load .env from project root - works for both dev and production
+const envPath = process.env.NODE_ENV === 'production'
+  ? path.resolve(__dirname, '../../../../.env')  // For compiled code in dist/server/src/
+  : path.resolve(__dirname, '../../.env');       // For development tsx watch in server/src/
+dotenv.config({ path: envPath });
 import express from 'express';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
