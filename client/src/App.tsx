@@ -33,9 +33,8 @@ function App() {
     const socket = apiService.initializeSocket();
 
     if (!socket) {
-      console.error('Failed to initialize socket');
+      // Socket.IO disabled in production, use HTTP-only mode
       setConnectionStatus('disconnected');
-      setError('Failed to initialize connection');
       return;
     }
 

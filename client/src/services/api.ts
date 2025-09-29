@@ -8,7 +8,6 @@ class ApiService {
   initializeSocket(serverUrl?: string): Socket | null {
     // Disable Socket.IO in production (Vercel) since it requires persistent WebSocket server
     if (window.location.hostname !== 'localhost') {
-      console.log('Socket.IO disabled in production - using HTTP API only');
       return null;
     }
 
