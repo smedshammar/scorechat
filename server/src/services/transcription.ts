@@ -36,20 +36,18 @@ export class TranscriptionService {
       return "Demo transcription - Player 1 scored a par on hole 1";
     }
 
+    const fs = require('fs');
+    const os = require('os');
+    let tempFilePath: string | null = null;
+
     try {
       console.log('Starting audio transcription, buffer size:', audioBuffer.length, 'bytes');
 
-      // Create a stream for OpenAI API - the OpenAI library expects this format
-      const { Readable } = require('stream');
-      const audioStream = new Readable({
-        read() {}
-      });
-      audioStream.push(audioBuffer);
-      audioStream.push(null); // End the stream
+      // Write audio buffer to a temporary file for OpenAI API
+      tempFilePath = path.join(os.tmpdir(), `audio_${Date.now()}.webm`);
 
-      // Add required properties for OpenAI API
-      (audioStream as any).path = 'audio.webm';
-      (audioStream as any).name = 'audio.webm';
+      fs.writeFileSync(tempFilePath, audioBuffer);
+      const fileStream = fs.createReadStream(tempFilePath);
 
       console.log('Created file object for OpenAI API');
 
@@ -59,13 +57,17 @@ export class TranscriptionService {
         : '';
 
       const transcription = await this.openai.audio.transcriptions.create({
-        file: audioStream,
+        file: fileStream,
         model: 'whisper-1',
         prompt: `This is a golf scoring update during live play. The speaker is reporting individual scores for consecutive holes, NOT phone numbers or codes. When hearing multiple scores like "four five three four", transcribe as separate numbers: "4 5 3 4" not "4-5-3-4". Golf context: Players are competing on an 18-hole course with standard par values.${playerContext}`,
         language: 'en',
       });
 
       console.log('Transcription successful:', transcription.text);
+
+      // Clean up temporary file
+      fs.unlinkSync(tempFilePath);
+
       return transcription.text;
     } catch (error: any) {
       console.error('Transcription error details:', {
@@ -75,6 +77,15 @@ export class TranscriptionService {
         code: error?.code,
         cause: error?.cause
       });
+
+      // Clean up temporary file on error too
+      try {
+        if (tempFilePath && fs.existsSync(tempFilePath)) {
+          fs.unlinkSync(tempFilePath);
+        }
+      } catch (cleanupError) {
+        // Ignore cleanup errors
+      }
 
       if (error instanceof Error) {
         throw new Error(`Failed to transcribe audio: ${error.message}`);
