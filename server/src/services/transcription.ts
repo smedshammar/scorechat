@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import path from 'path';
 import { ScoringUpdateSchema, type ScoringUpdate } from '../types';
 
 export class TranscriptionService {
