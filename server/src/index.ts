@@ -527,6 +527,19 @@ io.on('connection', (socket) => {
   });
 });
 
+// Serve static files from the React app build directory
+const clientBuildPath = path.resolve(__dirname, '../../../client/dist');
+app.use(express.static(clientBuildPath));
+
+// Handle client-side routing - serve index.html for all non-API routes
+app.get('*', (req, res) => {
+  // Don't serve index.html for API routes
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  res.sendFile(path.join(clientBuildPath, 'index.html'));
+});
+
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
