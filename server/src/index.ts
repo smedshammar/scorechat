@@ -14,7 +14,7 @@ import multer from 'multer';
 import { TranscriptionService } from './services/transcription';
 import { ScoringService } from './services/scoring';
 import { TeamSidegameService } from './services/teamSidegame';
-import type { WebSocketMessage, ScoreEntry } from '../../shared/types';
+import type { WebSocketMessage, ScoreEntry } from './types';
 
 const app = express();
 const server = createServer(app);

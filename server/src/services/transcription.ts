@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { ScoringUpdateSchema, type ScoringUpdate } from '../../../shared/types';
+import { ScoringUpdateSchema, type ScoringUpdate } from '../types';
 
 export class TranscriptionService {
   private openai: OpenAI;
