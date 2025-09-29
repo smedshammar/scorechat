@@ -528,7 +528,27 @@ io.on('connection', (socket) => {
 });
 
 // Serve static files from the React app build directory
-const clientBuildPath = path.resolve(__dirname, '../../../client/dist');
+// Try multiple possible paths for different deployment environments
+const possiblePaths = [
+  path.resolve(__dirname, '../../../client/dist'),  // Local development
+  path.resolve(__dirname, '../../client/dist'),     // Railway build
+  path.resolve(__dirname, '../client/dist'),        // Alternative
+  path.resolve(process.cwd(), 'client/dist')        // From project root
+];
+
+let clientBuildPath = possiblePaths[0];
+for (const testPath of possiblePaths) {
+  try {
+    if (require('fs').existsSync(testPath)) {
+      clientBuildPath = testPath;
+      console.log(`Found client build files at: ${clientBuildPath}`);
+      break;
+    }
+  } catch (e) {
+    // Continue to next path
+  }
+}
+
 app.use(express.static(clientBuildPath));
 
 // Handle client-side routing - serve index.html for all non-API routes
