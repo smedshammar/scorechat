@@ -2,20 +2,26 @@ import OpenAI from 'openai';
 import { ScoringUpdateSchema, type ScoringUpdate } from '../types';
 
 export class TranscriptionService {
-  private openai: OpenAI;
+  private openai: OpenAI | null = null;
+  private hasApiKey: boolean = false;
 
   constructor() {
     const apiKey = process.env.OPENAI_API_KEY;
 
     if (!apiKey) {
-      throw new Error('OPENAI_API_KEY environment variable is not set');
+      console.warn('OPENAI_API_KEY environment variable is not set - using mock responses');
+      this.hasApiKey = false;
+      return;
     }
 
     if (!apiKey.startsWith('sk-')) {
-      throw new Error('Invalid OpenAI API key format. Key should start with "sk-"');
+      console.warn('Invalid OpenAI API key format. Key should start with "sk-" - using mock responses');
+      this.hasApiKey = false;
+      return;
     }
 
     console.log('Initializing OpenAI client with API key:', apiKey.substring(0, 10) + '...');
+    this.hasApiKey = true;
 
     this.openai = new OpenAI({
       apiKey: apiKey,
@@ -25,6 +31,11 @@ export class TranscriptionService {
   }
 
   async transcribeAudio(audioBuffer: Buffer, playerNames: string[] = []): Promise<string> {
+    if (!this.hasApiKey || !this.openai) {
+      console.warn('No OpenAI API key available, returning mock transcription');
+      return "Demo transcription - Player 1 scored a par on hole 1";
+    }
+
     try {
       console.log('Starting audio transcription, buffer size:', audioBuffer.length, 'bytes');
 
@@ -65,6 +76,15 @@ export class TranscriptionService {
   }
 
   async parseTranscriptionToScore(transcription: string, playerNames: string[] = []): Promise<ScoringUpdate[]> {
+    if (!this.hasApiKey || !this.openai) {
+      console.warn('No OpenAI API key available, returning mock scoring update');
+      return [{
+        player: '',
+        action: 'score',
+        rawTranscription: transcription,
+      }];
+    }
+
     // Pre-process transcription to normalize dash-separated sequences
     const normalizedTranscription = this.normalizeTranscription(transcription);
     const playerNamesContext = playerNames.length > 0
