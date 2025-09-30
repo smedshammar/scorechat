@@ -1,9 +1,9 @@
 {
-  "077fc1f4-42aa-4f58-a374-57b9f84f23f4": {
-    "id": "077fc1f4-42aa-4f58-a374-57b9f84f23f4",
+  "ae0e4cf5-1a1c-4fea-b834-8eb4b2ad76e6": {
+    "id": "ae0e4cf5-1a1c-4fea-b834-8eb4b2ad76e6",
     "tournamentId": "9b308816-9879-4f49-bba1-940ea8ca77e1",
     "round": 1,
-    "gameType": "all-vs-all",
+    "gameType": "sum-match",
     "teams": [
       {
         "id": "green",
@@ -37,64 +37,48 @@
         ]
       }
     ],
-    "groupings": [
-      [
-        "Christer Smedshammar",
-        "Andreas Jörbeck",
-        "Johan Kökeritz"
-      ],
-      [
-        "Erik Qvist",
-        "Anders Sandgren",
-        "Fredrik Edwall"
-      ]
-    ],
     "matches": [
       {
-        "id": "20e01ca5-0a93-45fc-ad3d-196f362cda8a",
-        "sidegameId": "077fc1f4-42aa-4f58-a374-57b9f84f23f4",
-        "hole": 1,
-        "gameType": "all-vs-all",
-        "participants": [
-          "Christer Smedshammar",
-          "Andreas Jörbeck",
-          "Johan Kökeritz"
-        ],
-        "teamPoints": {
-          "green": 1,
-          "blue": 2,
-          "red": 0
-        },
-        "holeResults": {
-          "Christer Smedshammar": 2,
-          "Andreas Jörbeck": 3,
-          "Johan Kökeritz": 1
-        },
-        "timestamp": "2025-09-28T10:18:20.078Z"
-      },
-      {
-        "id": "662fa267-87ef-4332-8739-abc731d60fed",
-        "sidegameId": "077fc1f4-42aa-4f58-a374-57b9f84f23f4",
+        "id": "d502e2b5-10b8-42cb-bedf-69866b37a564",
+        "sidegameId": "ae0e4cf5-1a1c-4fea-b834-8eb4b2ad76e6",
         "hole": 2,
-        "gameType": "all-vs-all",
+        "gameType": "sum-match",
         "participants": [
-          "Johan Kökeritz",
-          "Andreas Jörbeck",
-          "Christer Smedshammar"
+          "Anders Sandgren"
         ],
         "teamPoints": {
           "green": 0,
-          "blue": 1,
-          "red": 1
+          "blue": 0,
+          "red": 0
         },
         "holeResults": {
-          "Johan Kökeritz": 1,
-          "Andreas Jörbeck": 1,
-          "Christer Smedshammar": 0
+          "Anders Sandgren": 3
         },
-        "timestamp": "2025-09-28T10:30:50.628Z"
+        "timestamp": "2025-09-30T09:28:01.868Z"
+      },
+      {
+        "id": "5c76f233-a5dd-4817-81c3-61520af3e606",
+        "sidegameId": "ae0e4cf5-1a1c-4fea-b834-8eb4b2ad76e6",
+        "hole": 1,
+        "gameType": "sum-match",
+        "participants": [
+          "Daniel Jönsson",
+          "Erik Qvist",
+          "Fredrik Edwall"
+        ],
+        "teamPoints": {
+          "green": 1,
+          "blue": -1,
+          "red": -1
+        },
+        "holeResults": {
+          "Daniel Jönsson": 1,
+          "Erik Qvist": 2,
+          "Fredrik Edwall": 2
+        },
+        "timestamp": "2025-09-30T09:51:44.353Z"
       }
     ],
-    "createdAt": "2025-09-28T10:17:51.341Z"
+    "createdAt": "2025-09-30T09:21:50.921Z"
   }
 }

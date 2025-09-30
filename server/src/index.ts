@@ -77,7 +77,19 @@ app.post('/api/audio', upload.single('audio'), async (req, res) => {
       timestamp: Date.now()
     } as WebSocketMessage);
 
-    const scoringUpdates = await transcriptionService.parseTranscriptionToScore(transcription, playerNames);
+    // Build current scores context for hole inference
+    const currentScores: {[playerName: string]: {[hole: number]: number}} = {};
+    for (const player of activeTournament.players) {
+      const playerScores = activeTournament.scores.filter(s =>
+        s.playerId === player.id && s.round === activeTournament.currentRound
+      );
+      currentScores[player.name] = {};
+      for (const score of playerScores) {
+        currentScores[player.name][score.hole] = score.strokes;
+      }
+    }
+
+    const scoringUpdates = await transcriptionService.parseTranscriptionToScore(transcription, playerNames, currentScores);
 
     // Send parsed scoring data for score verification
     if (scoringUpdates.length > 0) {

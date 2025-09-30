@@ -1,4 +1,4 @@
-import { Team, TeamSidegame, TeamMatch, TeamLeaderboardEntry } from '../types';
+import { Team, TeamSidegame, TeamMatch, TeamLeaderboardEntry, Tournament } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';
@@ -233,20 +233,102 @@ export class TeamSidegameService {
 
   generateTeamLeaderboard(sidegameId: string): TeamLeaderboardEntry[] {
     const sidegame = this.sidegames.get(sidegameId);
-    if (!sidegame) return [];
+    if (!sidegame || sidegame.gameType !== 'sum-match') return [];
+
+    // Get tournament data to calculate correct team points
+    const activeTournament = this.loadActiveTournament();
+    if (!activeTournament) return [];
+
+    // Calculate team points for each hole based on tournament data
+    const teamTotalPoints: { [teamId: string]: number } = {};
+    sidegame.teams.forEach(team => {
+      teamTotalPoints[team.id] = 0;
+    });
+
+    // Get all holes that have scores for any team members
+    const holesWithScores = new Set<number>();
+    for (const score of activeTournament.scores) {
+      if (score.round === activeTournament.currentRound) {
+        holesWithScores.add(score.hole);
+      }
+    }
+
+    let matchesPlayed = 0;
+
+    // Calculate team points for each hole
+    holesWithScores.forEach(hole => {
+      const teamStrokesDifference: { [teamId: string]: number } = {};
+      this.teams.forEach(team => {
+        teamStrokesDifference[team.id] = 0;
+      });
+
+      // Get scores for this hole from tournament data
+      const holeScores = activeTournament.scores.filter(s =>
+        s.hole === hole && s.round === activeTournament.currentRound
+      );
+
+      // Calculate team strokes vs par for this hole
+      holeScores.forEach(score => {
+        const player = activeTournament.players.find(p => p.id === score.playerId);
+        if (!player) return;
+
+        const team = this.getPlayerTeam(player.name);
+        if (!team) return;
+
+        const strokesVsPar = score.strokes - score.par;
+
+        // Apply green team alternation logic
+        if (team.id === 'green' &&
+            (player.name.includes('Christer') || player.name.includes('Anders'))) {
+
+          const isChristersHole = hole % 2 === 0;
+          const isAndersHole = hole % 2 === 1;
+
+          if ((player.name.includes('Christer') && isChristersHole) ||
+              (player.name.includes('Anders') && isAndersHole)) {
+            teamStrokesDifference[team.id] += strokesVsPar;
+          }
+        } else if (team.id !== 'green' ||
+                  (!player.name.includes('Christer') && !player.name.includes('Anders'))) {
+          teamStrokesDifference[team.id] += strokesVsPar;
+        }
+      });
+
+      // Award points based on team performance for this hole
+      const teamScores = Object.values(teamStrokesDifference);
+      const bestScore = Math.min(...teamScores);
+      const worstScore = Math.max(...teamScores);
+
+      // Only award points if there's a clear difference
+      if (bestScore !== worstScore) {
+        // Find teams with best score (winners get +1 point each)
+        const winners = Object.entries(teamStrokesDifference)
+          .filter(([_, score]) => score === bestScore)
+          .map(([teamId, _]) => teamId);
+
+        // Find teams with worst score (losers get -1 point each)
+        const losers = Object.entries(teamStrokesDifference)
+          .filter(([_, score]) => score === worstScore)
+          .map(([teamId, _]) => teamId);
+
+        // Award points - only if sole winner/loser (no ties)
+        if (winners.length === 1) {
+          teamTotalPoints[winners[0]] += 1;
+        }
+        if (losers.length === 1) {
+          teamTotalPoints[losers[0]] -= 1;
+        }
+      }
+
+      matchesPlayed++;
+    });
 
     const leaderboard: TeamLeaderboardEntry[] = sidegame.teams.map(team => {
-      const totalPoints = sidegame.matches.reduce((sum, match) => {
-        return sum + (match.teamPoints[team.id] || 0);
-      }, 0);
-
-      const matchesPlayed = sidegame.matches.length;
-
       return {
         teamId: team.id,
         teamName: team.name,
         teamColor: team.color,
-        totalPoints,
+        totalPoints: teamTotalPoints[team.id] || 0,
         matchesPlayed,
         position: 0,
       };
@@ -272,42 +354,81 @@ export class TeamSidegameService {
     const sidegame = this.sidegames.get(sidegameId);
     if (!sidegame || sidegame.gameType !== 'sum-match') return {};
 
+    // Get the tournament scoring data directly instead of relying on team matches
+    const activeTournament = this.loadActiveTournament();
+    if (!activeTournament) return {};
+
     const liveScorecard: { [hole: number]: { [teamId: string]: number } } = {};
 
-    sidegame.matches.forEach(match => {
-      liveScorecard[match.hole] = {};
+    // Get all holes that have scores for any team members
+    const holesWithScores = new Set<number>();
+    for (const score of activeTournament.scores) {
+      if (score.round === activeTournament.currentRound) {
+        holesWithScores.add(score.hole);
+      }
+    }
 
-      // Calculate team strokes vs par for this hole
+    // Calculate team scores for each hole
+    holesWithScores.forEach(hole => {
       const teamStrokesDifference: { [teamId: string]: number } = {};
       this.teams.forEach(team => {
         teamStrokesDifference[team.id] = 0;
       });
 
-      Object.entries(match.holeResults).forEach(([playerName, strokesVsPar]) => {
-        const team = this.getPlayerTeam(playerName);
-        if (team) {
-          // Apply same green team alternation logic
-          if (team.id === 'green' &&
-              (playerName.includes('Christer') || playerName.includes('Anders'))) {
+      // Get scores for this hole from tournament data
+      const holeScores = activeTournament.scores.filter(s =>
+        s.hole === hole && s.round === activeTournament.currentRound
+      );
 
-            const isChristersHole = match.hole % 2 === 0;
-            const isAndersHole = match.hole % 2 === 1;
+      holeScores.forEach(score => {
+        const player = activeTournament.players.find(p => p.id === score.playerId);
+        if (!player) return;
 
-            if ((playerName.includes('Christer') && isChristersHole) ||
-                (playerName.includes('Anders') && isAndersHole)) {
-              teamStrokesDifference[team.id] += strokesVsPar;
-            }
-          } else if (team.id !== 'green' ||
-                    (!playerName.includes('Christer') && !playerName.includes('Anders'))) {
+        const team = this.getPlayerTeam(player.name);
+        if (!team) return;
+
+        const strokesVsPar = score.strokes - score.par;
+
+        // Apply green team alternation logic
+        if (team.id === 'green' &&
+            (player.name.includes('Christer') || player.name.includes('Anders'))) {
+
+          const isChristersHole = hole % 2 === 0;
+          const isAndersHole = hole % 2 === 1;
+
+          if ((player.name.includes('Christer') && isChristersHole) ||
+              (player.name.includes('Anders') && isAndersHole)) {
             teamStrokesDifference[team.id] += strokesVsPar;
           }
+        } else if (team.id !== 'green' ||
+                  (!player.name.includes('Christer') && !player.name.includes('Anders'))) {
+          teamStrokesDifference[team.id] += strokesVsPar;
         }
       });
 
-      liveScorecard[match.hole] = teamStrokesDifference;
+      liveScorecard[hole] = teamStrokesDifference;
     });
 
     return liveScorecard;
+  }
+
+  private loadActiveTournament(): Tournament | null {
+    try {
+      const tournamentsFile = path.join(this.dataPath, 'tournaments.json');
+      if (!fs.existsSync(tournamentsFile)) {
+        return null;
+      }
+
+      const data = fs.readFileSync(tournamentsFile, 'utf8');
+      const tournamentsData = JSON.parse(data);
+
+      // Find the active tournament (GA 2025)
+      const tournaments = Object.values(tournamentsData) as Tournament[];
+      return tournaments.find(t => t.name === 'GA 2025') || null;
+    } catch (error) {
+      console.error('Failed to load active tournament:', error);
+      return null;
+    }
   }
 
   // Persistence methods

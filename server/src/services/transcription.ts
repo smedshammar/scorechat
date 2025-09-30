@@ -95,7 +95,7 @@ export class TranscriptionService {
     }
   }
 
-  async parseTranscriptionToScore(transcription: string, playerNames: string[] = []): Promise<ScoringUpdate[]> {
+  async parseTranscriptionToScore(transcription: string, playerNames: string[] = [], currentScores?: {[playerName: string]: {[hole: number]: number}}): Promise<ScoringUpdate[]> {
     if (!this.hasApiKey || !this.openai) {
       console.warn('No OpenAI API key available, returning mock scoring update');
       return [{
@@ -111,6 +111,31 @@ export class TranscriptionService {
       ? `\n\nKnown player names: ${playerNames.join(', ')}`
       : '';
 
+    // Build context about current scores for hole inference
+    let nextHoleContext = '';
+    if (currentScores) {
+      const playerNextHoles: {[playerName: string]: number} = {};
+
+      for (const playerName of playerNames) {
+        const playerScores = currentScores[playerName] || {};
+        // Find the first hole without a score (holes 1-18)
+        let nextHole = 1;
+        for (let hole = 1; hole <= 18; hole++) {
+          if (playerScores[hole] === undefined || playerScores[hole] === null) {
+            nextHole = hole;
+            break;
+          }
+        }
+        playerNextHoles[playerName] = nextHole;
+      }
+
+      if (Object.keys(playerNextHoles).length > 0) {
+        nextHoleContext = `\n\nCURRENT TOURNAMENT CONTEXT - Next expected holes for players:\n` +
+          Object.entries(playerNextHoles).map(([name, hole]) => `- ${name}: hole ${hole}`).join('\n') +
+          `\n\nWhen NO hole number is mentioned in the transcription, assume scores refer to the next expected holes for each player in sequence.`;
+      }
+    }
+
     const golfContext = `
 You are a golf scoring system. Parse the following transcription of a spoken golf scoring update.
 
@@ -125,7 +150,7 @@ Extract:
 - Player name (if mentioned)
 - Hole number (1-18, if mentioned)
 - Score type (birdie, eagle, par, bogey, double_bogey) or specific stroke count
-- Any specific number of strokes${playerNamesContext}
+- Any specific number of strokes${playerNamesContext}${nextHoleContext}
 
 IMPORTANT - Sequential Scoring Patterns:
 When you see patterns like "from hole 6, 4 5 3 4" or "starting at hole 3: 3 4 5 6", this means:
