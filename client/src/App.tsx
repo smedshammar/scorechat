@@ -5,7 +5,7 @@ import { TeamLeaderboard } from './components/TeamLeaderboard';
 import { ScoreVerificationGrid } from './components/ScoreVerificationGrid';
 import { AdminPanel } from './components/AdminPanel';
 import { apiService } from './services/api';
-import type { LeaderboardEntry, WebSocketMessage, Tournament, ScoreEntry } from './types';
+import type { LeaderboardEntry, WebSocketMessage, Tournament, ScoreEntry, Team } from './types';
 import './App.css';
 
 interface PlayerScore {
@@ -22,6 +22,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<'main' | 'admin'>('main');
   const [teamLeaderboardData, setTeamLeaderboardData] = useState<any>(null);
+  const [teams, setTeams] = useState<Team[]>([]);
   const tournamentRef = useRef<Tournament | null>(null);
 
   // Update ref whenever tournament state changes
@@ -97,6 +98,10 @@ function App() {
 
         const initialLeaderboard = await apiService.getLeaderboard(activeTournament.id);
         setLeaderboard(initialLeaderboard);
+
+        // Load teams data
+        const teamsData = await apiService.getTeams();
+        setTeams(teamsData);
 
         // Load existing scores for score verification grid
         const existingPlayerScores: PlayerScore[] = [];
@@ -261,13 +266,14 @@ function App() {
 
           <ScoreVerificationGrid
             playerScores={playerScores}
+            teams={teams}
             onRemovePlayer={handleRemovePlayer}
             onUpdateScore={handleUpdateScore}
           />
         </div>
 
         <div className="right-panel">
-          <Leaderboard leaderboard={leaderboard} />
+          <Leaderboard leaderboard={leaderboard} teams={teams} />
           {tournament && (
             <TeamLeaderboard
               tournament={tournament}

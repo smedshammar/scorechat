@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Team } from '../types';
 
 interface PlayerScore {
   playerId: string;
@@ -8,12 +9,14 @@ interface PlayerScore {
 
 interface ScoreVerificationGridProps {
   playerScores: PlayerScore[];
+  teams: Team[];
   onRemovePlayer: (playerId: string) => void;
   onUpdateScore: (playerId: string, hole: number, score: number | null) => void;
 }
 
 export const ScoreVerificationGrid: React.FC<ScoreVerificationGridProps> = ({
   playerScores,
+  teams,
   onRemovePlayer,
   onUpdateScore,
 }) => {
@@ -24,6 +27,20 @@ export const ScoreVerificationGrid: React.FC<ScoreVerificationGridProps> = ({
       .map(part => part.charAt(0).toUpperCase())
       .join('')
       .substring(0, 3); // Max 3 characters
+  };
+
+  // Helper function to get player team color
+  const getPlayerTeamColor = (playerName: string): string | null => {
+    for (const team of teams) {
+      if (team.players.some(player =>
+        player.toLowerCase() === playerName.toLowerCase() ||
+        playerName.toLowerCase().includes(player.toLowerCase()) ||
+        player.toLowerCase().includes(playerName.toLowerCase())
+      )) {
+        return team.color;
+      }
+    }
+    return null;
   };
 
   if (playerScores.length === 0) {
@@ -75,6 +92,12 @@ export const ScoreVerificationGrid: React.FC<ScoreVerificationGridProps> = ({
                   className="hole-cell player-initials-cell"
                   title={player.playerName}
                 >
+                  {getPlayerTeamColor(player.playerName) && (
+                    <span
+                      className="team-color-dot"
+                      style={{ backgroundColor: getPlayerTeamColor(player.playerName)! }}
+                    ></span>
+                  )}
                   {getPlayerInitials(player.playerName)}
                 </div>
                 {Array.from({length: 9}, (_, i) => {
@@ -89,7 +112,8 @@ export const ScoreVerificationGrid: React.FC<ScoreVerificationGridProps> = ({
                         value={player.holeScores[hole] || ''}
                         onChange={(e) => {
                           const value = e.target.value;
-                          const score = value === '' ? null : parseInt(value);
+                          // Clear score if empty or 0
+                          const score = (value === '' || value === '0') ? null : parseInt(value);
                           onUpdateScore(player.playerId, hole, score);
                         }}
                         placeholder=""
@@ -132,6 +156,12 @@ export const ScoreVerificationGrid: React.FC<ScoreVerificationGridProps> = ({
                   className="hole-cell player-initials-cell"
                   title={player.playerName}
                 >
+                  {getPlayerTeamColor(player.playerName) && (
+                    <span
+                      className="team-color-dot"
+                      style={{ backgroundColor: getPlayerTeamColor(player.playerName)! }}
+                    ></span>
+                  )}
                   {getPlayerInitials(player.playerName)}
                 </div>
                 {Array.from({length: 9}, (_, i) => {
@@ -146,7 +176,8 @@ export const ScoreVerificationGrid: React.FC<ScoreVerificationGridProps> = ({
                         value={player.holeScores[hole] || ''}
                         onChange={(e) => {
                           const value = e.target.value;
-                          const score = value === '' ? null : parseInt(value);
+                          // Clear score if empty or 0
+                          const score = (value === '' || value === '0') ? null : parseInt(value);
                           onUpdateScore(player.playerId, hole, score);
                         }}
                         placeholder=""
@@ -172,7 +203,7 @@ export const ScoreVerificationGrid: React.FC<ScoreVerificationGridProps> = ({
 
       <div className="grid-footer">
         <p className="helper-text">
-          💡 Hover over initials to see full names • Enter scores directly or remove players mentioned by mistake
+          💡 Hover over initials to see full names • Enter scores directly or remove players mentioned by mistake • Clear fields or enter 0 to delete scores
         </p>
       </div>
     </div>

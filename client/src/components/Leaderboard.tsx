@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import type { LeaderboardEntry } from '../types';
+import type { LeaderboardEntry, Team } from '../types';
 
 interface LeaderboardProps {
   leaderboard: LeaderboardEntry[];
+  teams: Team[];
 }
 
 const formatScore = (score: number): string => {
@@ -208,7 +209,20 @@ const getRoundSummaryData = (entry: LeaderboardEntry) => {
   return rounds;
 };
 
-export const Leaderboard: React.FC<LeaderboardProps> = ({ leaderboard }) => {
+const getPlayerTeamColor = (playerName: string, teams: Team[]): string | null => {
+  for (const team of teams) {
+    if (team.players.some(player =>
+      player.toLowerCase() === playerName.toLowerCase() ||
+      playerName.toLowerCase().includes(player.toLowerCase()) ||
+      player.toLowerCase().includes(playerName.toLowerCase())
+    )) {
+      return team.color;
+    }
+  }
+  return null;
+};
+
+export const Leaderboard: React.FC<LeaderboardProps> = ({ leaderboard, teams }) => {
   const [expandedPlayers, setExpandedPlayers] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<'score' | 'stableford'>('score');
 
@@ -282,7 +296,15 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ leaderboard }) => {
             <div className={`leaderboard-row ${index === 0 ? 'leader' : ''}`}>
               <div className="pos">{entry.position}</div>
               <div className="player">
-                <div className="player-name">{entry.playerName}</div>
+                <div className="player-name">
+                  {getPlayerTeamColor(entry.playerName, teams) && (
+                    <span
+                      className="team-color-dot"
+                      style={{ backgroundColor: getPlayerTeamColor(entry.playerName, teams)! }}
+                    ></span>
+                  )}
+                  {entry.playerName}
+                </div>
               </div>
               <div className="round">
                 <div className="score-row">

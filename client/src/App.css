@@ -1727,11 +1727,14 @@ body {
 }
 
 .team-color-dot {
+  display: inline-block;
   width: 12px;
   height: 12px;
   border-radius: 50%;
   border: 1px solid #fff;
   box-shadow: 0 0 0 1px #d1d5db;
+  margin-right: 8px;
+  flex-shrink: 0;
 }
 
 .team-name-short {

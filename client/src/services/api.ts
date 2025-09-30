@@ -1,5 +1,5 @@
 import io, { Socket } from 'socket.io-client';
-import type { WebSocketMessage, Tournament, LeaderboardEntry } from '../types';
+import type { WebSocketMessage, Tournament, LeaderboardEntry, Team } from '../types';
 
 class ApiService {
   private socket: Socket | null = null;
@@ -119,6 +119,14 @@ class ApiService {
 
   async getPlayerScorecard(tournamentId: string, playerId: string) {
     const response = await fetch(`/api/tournament/${tournamentId}/player/${playerId}/scorecard`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  }
+
+  async getTeams(): Promise<Team[]> {
+    const response = await fetch('/api/teams');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
