@@ -302,9 +302,6 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
           <div className="scorecard-legend">
             <p><strong>Sum Match:</strong> Teams compete by total strokes vs par per hole</p>
             <p><strong>Scoring:</strong> Best team on hole gets +1 point, worst team gets -1 point</p>
-            {currentSidegame.teams.find(t => t.id === 'green') && (
-              <p><small>* Green Team alternates: Anders (odd holes), Christer (even holes)</small></p>
-            )}
           </div>
         </div>
       )}

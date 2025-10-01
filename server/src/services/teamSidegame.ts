@@ -138,22 +138,7 @@ export class TeamSidegameService {
     Object.entries(holeResults).forEach(([playerName, strokesVsPar]) => {
       const team = this.getPlayerTeam(playerName);
       if (team) {
-        // Special handling for green team (4 players) - alternate between Christer and Anders
-        if (team.id === 'green' &&
-            (playerName.includes('Christer') || playerName.includes('Anders'))) {
-
-          const isChristersHole = hole % 2 === 0; // Even holes for Christer
-          const isAndersHole = hole % 2 === 1;    // Odd holes for Anders
-
-          if ((playerName.includes('Christer') && isChristersHole) ||
-              (playerName.includes('Anders') && isAndersHole)) {
-            teamStrokesDifference[team.id] += strokesVsPar;
-          }
-        } else if (team.id !== 'green' ||
-                  (!playerName.includes('Christer') && !playerName.includes('Anders'))) {
-          // For non-green teams, or green team members Daniel/Stefan
-          teamStrokesDifference[team.id] += strokesVsPar;
-        }
+        teamStrokesDifference[team.id] += strokesVsPar;
       }
     });
 
@@ -383,22 +368,7 @@ export class TeamSidegameService {
         if (!team) return;
 
         const strokesVsPar = score.strokes - score.par;
-
-        // Apply green team alternation logic
-        if (team.id === 'green' &&
-            (player.name.includes('Christer') || player.name.includes('Anders'))) {
-
-          const isChristersHole = hole % 2 === 0;
-          const isAndersHole = hole % 2 === 1;
-
-          if ((player.name.includes('Christer') && isChristersHole) ||
-              (player.name.includes('Anders') && isAndersHole)) {
-            teamStrokesDifference[team.id] += strokesVsPar;
-          }
-        } else if (team.id !== 'green' ||
-                  (!player.name.includes('Christer') && !player.name.includes('Anders'))) {
-          teamStrokesDifference[team.id] += strokesVsPar;
-        }
+        teamStrokesDifference[team.id] += strokesVsPar;
       });
 
       // Award points based on team performance for this hole
@@ -495,22 +465,7 @@ export class TeamSidegameService {
         if (!team) return;
 
         const strokesVsPar = score.strokes - score.par;
-
-        // Apply green team alternation logic
-        if (team.id === 'green' &&
-            (player.name.includes('Christer') || player.name.includes('Anders'))) {
-
-          const isChristersHole = hole % 2 === 0;
-          const isAndersHole = hole % 2 === 1;
-
-          if ((player.name.includes('Christer') && isChristersHole) ||
-              (player.name.includes('Anders') && isAndersHole)) {
-            teamStrokesDifference[team.id] += strokesVsPar;
-          }
-        } else if (team.id !== 'green' ||
-                  (!player.name.includes('Christer') && !player.name.includes('Anders'))) {
-          teamStrokesDifference[team.id] += strokesVsPar;
-        }
+        teamStrokesDifference[team.id] += strokesVsPar;
       });
 
       liveScorecard[hole] = teamStrokesDifference;
