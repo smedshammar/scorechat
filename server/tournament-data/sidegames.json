@@ -1,0 +1,84 @@
+{
+  "ae0e4cf5-1a1c-4fea-b834-8eb4b2ad76e6": {
+    "id": "ae0e4cf5-1a1c-4fea-b834-8eb4b2ad76e6",
+    "tournamentId": "9b308816-9879-4f49-bba1-940ea8ca77e1",
+    "round": 1,
+    "gameType": "sum-match",
+    "teams": [
+      {
+        "id": "green",
+        "name": "Green Team",
+        "color": "#22c55e",
+        "players": [
+          "Christer Smedshammar",
+          "Anders Sandgren",
+          "Daniel Jönsson",
+          "Stefan Lindblad"
+        ]
+      },
+      {
+        "id": "blue",
+        "name": "Blue Team",
+        "color": "#3b82f6",
+        "players": [
+          "Kristian Anselius",
+          "Erik Qvist",
+          "Andreas Jörbeck"
+        ]
+      },
+      {
+        "id": "red",
+        "name": "Red Team",
+        "color": "#ef4444",
+        "players": [
+          "Henrik Jarpner",
+          "Fredrik Edwall",
+          "Johan Kökeritz"
+        ]
+      }
+    ],
+    "matches": [
+      {
+        "id": "d502e2b5-10b8-42cb-bedf-69866b37a564",
+        "sidegameId": "ae0e4cf5-1a1c-4fea-b834-8eb4b2ad76e6",
+        "hole": 2,
+        "gameType": "sum-match",
+        "participants": [
+          "Anders Sandgren"
+        ],
+        "teamPoints": {
+          "green": 0,
+          "blue": 0,
+          "red": 0
+        },
+        "holeResults": {
+          "Anders Sandgren": 3
+        },
+        "timestamp": "2025-09-30T09:28:01.868Z"
+      },
+      {
+        "id": "5c76f233-a5dd-4817-81c3-61520af3e606",
+        "sidegameId": "ae0e4cf5-1a1c-4fea-b834-8eb4b2ad76e6",
+        "hole": 1,
+        "gameType": "sum-match",
+        "participants": [
+          "Daniel Jönsson",
+          "Erik Qvist",
+          "Fredrik Edwall"
+        ],
+        "teamPoints": {
+          "green": 1,
+          "blue": -1,
+          "red": -1
+        },
+        "holeResults": {
+          "Daniel Jönsson": 1,
+          "Erik Qvist": 2,
+          "Fredrik Edwall": 2
+        },
+        "timestamp": "2025-09-30T09:51:44.353Z"
+      }
+    ],
+    "createdAt": "2025-09-30T09:21:50.921Z"
+  }
+}

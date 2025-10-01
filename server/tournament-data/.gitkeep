@@ -1,0 +1,2 @@
+# This directory stores tournament data
+# The actual JSON files are gitignored to prevent data loss on deployment

@@ -32,6 +32,3 @@ Thumbs.db
 
 # Coverage
 coverage/
-
-# Tournament data - avoid overwriting production data
-server/tournament-data/*.json
