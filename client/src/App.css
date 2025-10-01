@@ -1677,9 +1677,34 @@ body {
 
 .team-total-info {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 0.5rem;
   flex: 1;
+}
+
+.team-scores {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.team-score-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.score-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.team-score {
+  font-size: 1.125rem;
+  font-weight: 700;
 }
 
 .team-total-score {
@@ -1687,14 +1712,17 @@ body {
   font-weight: 700;
 }
 
+.team-score.under,
 .team-total-score.under {
   color: #059669;
 }
 
+.team-score.over,
 .team-total-score.over {
   color: #dc2626;
 }
 
+.team-score.even,
 .team-total-score.even {
   color: #6b7280;
 }

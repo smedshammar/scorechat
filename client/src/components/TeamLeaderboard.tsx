@@ -15,7 +15,7 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
   const [teamLeaderboard, setTeamLeaderboard] = useState<TeamLeaderboardEntry[]>([]);
   const [currentSidegame, setCurrentSidegame] = useState<TeamSidegame | null>(null);
   const [liveScorecard, setLiveScorecard] = useState<{ [hole: number]: { [teamId: string]: number } }>({});
-  const [allTimeTeamScores, setAllTimeTeamScores] = useState<{ [teamId: string]: { totalScore: number; rounds: number } }>({});
+  const [allTimeTeamScores, setAllTimeTeamScores] = useState<{ [teamId: string]: { totalScore: number; currentRoundScore: number; rounds: number } }>({});
 
   useEffect(() => {
     if (tournament?.id) {
@@ -77,11 +77,12 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
       // Get teams from the sidegame
       if (!currentSidegame?.teams) return;
 
-      // Calculate total scores for each team across all rounds
-      const teamScores: { [teamId: string]: { totalScore: number; rounds: number } } = {};
+      // Calculate total scores for each team across all rounds (including current)
+      const teamScores: { [teamId: string]: { totalScore: number; currentRoundScore: number; rounds: number } } = {};
 
       currentSidegame.teams.forEach(team => {
         let teamTotalScore = 0;
+        let teamCurrentRoundScore = 0;
         let teamRoundsPlayed = 0;
 
         team.players.forEach(playerName => {
@@ -91,24 +92,39 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
             playerName.toLowerCase().includes(entry.playerName.toLowerCase())
           );
 
-          if (playerEntry && playerEntry.roundScores) {
-            // Sum scores from all completed rounds (rounds before current round)
-            playerEntry.roundScores.forEach((round: any) => {
-              if (round.round < currentRound && round.roundStrokes > 0) {
-                const roundPar = round.holeScores.reduce((sum: number, score: number | null, idx: number) =>
-                  score !== null ? sum + (playerEntry.holePars?.[idx] || 4) : sum, 0
-                );
-                teamTotalScore += (round.roundStrokes - roundPar);
-                if (teamRoundsPlayed === 0 || round.round > teamRoundsPlayed) {
-                  teamRoundsPlayed = round.round;
+          if (playerEntry) {
+            // Add current round score
+            teamCurrentRoundScore += playerEntry.currentScore || 0;
+
+            if (playerEntry.roundScores) {
+              // Sum scores from all rounds (including current)
+              playerEntry.roundScores.forEach((round: any) => {
+                if (round.roundStrokes > 0) {
+                  const roundPar = round.holeScores.reduce((sum: number, score: number | null, idx: number) =>
+                    score !== null ? sum + (playerEntry.holePars?.[idx] || 4) : sum, 0
+                  );
+                  const roundScore = round.roundStrokes - roundPar;
+
+                  // For completed rounds (before current)
+                  if (round.round < currentRound) {
+                    teamTotalScore += roundScore;
+                  }
+
+                  if (teamRoundsPlayed === 0 || round.round > teamRoundsPlayed) {
+                    teamRoundsPlayed = round.round;
+                  }
                 }
-              }
-            });
+              });
+            }
+
+            // Add current round to total
+            teamTotalScore += teamCurrentRoundScore;
           }
         });
 
         teamScores[team.id] = {
           totalScore: teamTotalScore,
+          currentRoundScore: teamCurrentRoundScore,
           rounds: teamRoundsPlayed
         };
       });
@@ -197,10 +213,10 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
         </div>
       </div>
 
-      {/* All-Time Team Status */}
-      {Object.keys(allTimeTeamScores).length > 0 && currentRound > 1 && (
+      {/* Team Score Leaderboard */}
+      {Object.keys(allTimeTeamScores).length > 0 && (
         <div className="team-total-status">
-          <h3>Team Total Status (All Rounds)</h3>
+          <h3>Team Score Leaderboard</h3>
           <div className="team-total-grid">
             {currentSidegame.teams
               .map(team => ({
@@ -216,15 +232,26 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
                   ></div>
                   <div className="team-total-info">
                     <div className="team-name">{team.name}</div>
-                    <div className={`team-total-score ${(team.totalScore || 0) === 0 ? 'even' : (team.totalScore || 0) < 0 ? 'under' : 'over'}`}>
-                      {(team.totalScore || 0) === 0 ? 'E' : (team.totalScore || 0) > 0 ? `+${team.totalScore}` : team.totalScore}
+                    <div className="team-scores">
+                      <div className="team-score-column">
+                        <span className="score-label">Round {currentRound}</span>
+                        <div className={`team-score ${(team.currentRoundScore || 0) === 0 ? 'even' : (team.currentRoundScore || 0) < 0 ? 'under' : 'over'}`}>
+                          {(team.currentRoundScore || 0) === 0 ? 'E' : (team.currentRoundScore || 0) > 0 ? `+${team.currentRoundScore}` : team.currentRoundScore}
+                        </div>
+                      </div>
+                      <div className="team-score-column">
+                        <span className="score-label">Total</span>
+                        <div className={`team-score team-total-score ${(team.totalScore || 0) === 0 ? 'even' : (team.totalScore || 0) < 0 ? 'under' : 'over'}`}>
+                          {(team.totalScore || 0) === 0 ? 'E' : (team.totalScore || 0) > 0 ? `+${team.totalScore}` : team.totalScore}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               ))}
           </div>
           <p className="team-total-description">
-            Combined team score vs par across all completed rounds
+            Combined team score vs par for round {currentRound} and overall total
           </p>
         </div>
       )}
