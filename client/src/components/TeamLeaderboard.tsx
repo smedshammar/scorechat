@@ -198,7 +198,7 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
       </div>
 
       {/* All-Time Team Status */}
-      {Object.keys(allTimeTeamScores).length > 0 && (
+      {Object.keys(allTimeTeamScores).length > 0 && currentRound > 1 && (
         <div className="team-total-status">
           <h3>Team Total Status (All Rounds)</h3>
           <div className="team-total-grid">

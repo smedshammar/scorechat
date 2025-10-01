@@ -231,10 +231,117 @@ export class TeamSidegameService {
     return teamPoints;
   }
 
+  private generateAllVsAllLeaderboard(sidegame: TeamSidegame): TeamLeaderboardEntry[] {
+    const activeTournament = this.loadActiveTournament();
+    if (!activeTournament) return [];
+
+    const teamTotalPoints: { [teamId: string]: number } = {};
+    sidegame.teams.forEach(team => {
+      teamTotalPoints[team.id] = 0;
+    });
+
+    // Get all holes that have scores for any team members
+    const holesWithScores = new Set<number>();
+    for (const score of activeTournament.scores) {
+      if (score.round === activeTournament.currentRound) {
+        holesWithScores.add(score.hole);
+      }
+    }
+
+    let matchesPlayed = 0;
+
+    // Calculate team points for each hole using all-vs-all logic
+    holesWithScores.forEach(hole => {
+      // Get scores for this hole from tournament data (using Stableford points)
+      const holeResults: { [playerName: string]: number } = {};
+
+      const holeScores = activeTournament.scores.filter(s =>
+        s.hole === hole && s.round === activeTournament.currentRound
+      );
+
+      holeScores.forEach(score => {
+        const player = activeTournament.players.find(p => p.id === score.playerId);
+        if (!player) return;
+
+        // Calculate Stableford points for this player on this hole
+        const stablefordPoints = this.calculateStablefordPoints(
+          score.strokes,
+          score.par,
+          player.receivedStrokes || 0,
+          hole
+        );
+
+        holeResults[player.name] = stablefordPoints;
+      });
+
+      // Calculate team points using all-vs-all logic
+      const holeTeamPoints = this.calculateAllVsAllPoints(holeResults, sidegame.groupings || []);
+
+      // Add to total
+      Object.entries(holeTeamPoints).forEach(([teamId, points]) => {
+        teamTotalPoints[teamId] += points;
+      });
+
+      matchesPlayed++;
+    });
+
+    const leaderboard: TeamLeaderboardEntry[] = sidegame.teams.map(team => {
+      return {
+        teamId: team.id,
+        teamName: team.name,
+        teamColor: team.color,
+        totalPoints: teamTotalPoints[team.id] || 0,
+        matchesPlayed,
+        position: 0,
+      };
+    });
+
+    // Sort by total points (descending)
+    leaderboard.sort((a, b) => {
+      if (b.totalPoints !== a.totalPoints) {
+        return b.totalPoints - a.totalPoints;
+      }
+      return a.teamName.localeCompare(b.teamName);
+    });
+
+    // Assign positions
+    leaderboard.forEach((entry, index) => {
+      entry.position = index + 1;
+    });
+
+    return leaderboard;
+  }
+
+  private calculateStablefordPoints(strokes: number, par: number, receivedStrokes: number, hole: number): number {
+    // Standard handicap index (1-18)
+    const standardIndex = [8,14,4,16,2,6,12,10,18,11,3,17,13,9,1,5,15,7];
+
+    // Determine if player gets a stroke on this hole based on handicap index
+    const holeIndex = standardIndex[hole - 1];
+    const strokesReceived = Math.floor(receivedStrokes / 18) + (holeIndex <= (receivedStrokes % 18) ? 1 : 0);
+
+    // Adjusted par for this player on this hole
+    const adjustedPar = par + strokesReceived;
+
+    // Calculate stableford points based on score vs adjusted par
+    const scoreDiff = strokes - adjustedPar;
+
+    if (scoreDiff <= -2) return 4; // Eagle or better
+    if (scoreDiff === -1) return 3; // Birdie
+    if (scoreDiff === 0) return 2;  // Par
+    if (scoreDiff === 1) return 1;  // Bogey
+    return 0; // Double bogey or worse
+  }
+
   generateTeamLeaderboard(sidegameId: string): TeamLeaderboardEntry[] {
     const sidegame = this.sidegames.get(sidegameId);
-    if (!sidegame || sidegame.gameType !== 'sum-match') return [];
+    if (!sidegame) return [];
 
+    if (sidegame.gameType === 'all-vs-all') {
+      return this.generateAllVsAllLeaderboard(sidegame);
+    }
+
+    // Sum-match leaderboard logic
     // Get tournament data to calculate correct team points
     const activeTournament = this.loadActiveTournament();
     if (!activeTournament) return [];
