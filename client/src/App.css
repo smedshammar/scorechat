@@ -1645,6 +1645,67 @@ body {
   color: #6b7280;
 }
 
+/* Team Total Status */
+.team-total-status {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.team-total-status h3 {
+  margin: 0 0 1rem 0;
+  color: #374151;
+}
+
+.team-total-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.team-total-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+.team-total-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+}
+
+.team-total-score {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.team-total-score.under {
+  color: #059669;
+}
+
+.team-total-score.over {
+  color: #dc2626;
+}
+
+.team-total-score.even {
+  color: #6b7280;
+}
+
+.team-total-description {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
 .live-scorecard {
   margin-top: 2rem;
   padding-top: 2rem;

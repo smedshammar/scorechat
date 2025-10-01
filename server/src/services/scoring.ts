@@ -242,52 +242,23 @@ export class ScoringService {
     if (!tournament) return [];
 
     const leaderboard: LeaderboardEntry[] = tournament.players.map(player => {
-      let playerScores;
-      let totalStrokes = 0;
-      let holesCompleted = 0;
-      let totalPar = 0;
+      // For the "Round" column, always use current round scores
+      const displayRound = selectedRound || tournament.currentRound;
+      const currentRoundScores = tournament.scores.filter(s => s.playerId === player.id && s.round === displayRound);
+
+      let totalStrokes = currentRoundScores.reduce((sum, score) => sum + score.strokes, 0);
+      let holesCompleted = currentRoundScores.length;
+      let totalPar = currentRoundScores.reduce((sum, score) => sum + score.par, 0);
       let totalStablefordPoints = 0;
-
-      if (selectedRound) {
-        // Show single round
-        playerScores = tournament.scores.filter(s => s.playerId === player.id && s.round === selectedRound);
-        totalStrokes = playerScores.reduce((sum, score) => sum + score.strokes, 0);
-        holesCompleted = playerScores.length;
-        totalPar = playerScores.reduce((sum, score) => sum + score.par, 0);
-      } else {
-        // Show total across all rounds
-        playerScores = tournament.scores.filter(s => s.playerId === player.id);
-
-        // Calculate totals per round first, then sum
-        const roundTotals = new Map();
-        playerScores.forEach(score => {
-          if (!roundTotals.has(score.round)) {
-            roundTotals.set(score.round, { strokes: 0, holes: 0, par: 0 });
-          }
-          const roundTotal = roundTotals.get(score.round);
-          roundTotal.strokes += score.strokes;
-          roundTotal.holes += 1;
-          roundTotal.par += score.par;
-        });
-
-        for (const roundTotal of roundTotals.values()) {
-          totalStrokes += roundTotal.strokes;
-          holesCompleted += roundTotal.holes;
-          totalPar += roundTotal.par;
-        }
-      }
 
       const currentScore = totalStrokes - totalPar;
 
-      // Create hole-by-hole scorecard for selected round or current round
-      const displayRound = selectedRound || tournament.currentRound;
-      const displayRoundScores = tournament.scores.filter(s => s.playerId === player.id && s.round === displayRound);
-
+      // Create hole-by-hole scorecard for the display round
       const holeScores: number[] = new Array(18).fill(null);
       const holePars: number[] = tournament.par;
       const stablefordPoints: number[] = new Array(18).fill(null);
 
-      displayRoundScores.forEach(score => {
+      currentRoundScores.forEach(score => {
         holeScores[score.hole - 1] = score.strokes;
         stablefordPoints[score.hole - 1] = this.calculateStablefordPoints(
           score.strokes,
@@ -297,21 +268,8 @@ export class ScoringService {
         );
       });
 
-      // Calculate stableford totals
-      if (selectedRound) {
-        totalStablefordPoints = stablefordPoints.reduce((sum, points) => sum + (points || 0), 0);
-      } else {
-        // Sum stableford points across all rounds
-        const allPlayerScores = tournament.scores.filter(s => s.playerId === player.id);
-        totalStablefordPoints = allPlayerScores.reduce((sum, score) => {
-          return sum + this.calculateStablefordPoints(
-            score.strokes,
-            score.par,
-            player.receivedStrokes || 0,
-            score.hole
-          );
-        }, 0);
-      }
+      // Calculate stableford totals for the current round
+      totalStablefordPoints = stablefordPoints.reduce((sum, points) => sum + (points || 0), 0);
 
       const averageStablefordPoints = holesCompleted > 0 ? totalStablefordPoints / holesCompleted : 0;
       const expectedPoints = holesCompleted * 2; // 2 points per hole is par performance
@@ -386,15 +344,17 @@ export class ScoringService {
     return leaderboard;
   }
 
-  getPlayerScorecard(tournamentId: string, playerId: string) {
+  getPlayerScorecard(tournamentId: string, playerId: string, round?: number) {
     const tournament = this.tournaments.get(tournamentId);
     if (!tournament) return null;
 
     const player = tournament.players.find(p => p.id === playerId);
     if (!player) return null;
 
+    // Filter by current round if no specific round is provided
+    const targetRound = round !== undefined ? round : tournament.currentRound;
     const scores = tournament.scores
-      .filter(s => s.playerId === playerId)
+      .filter(s => s.playerId === playerId && s.round === targetRound)
       .sort((a, b) => a.hole - b.hole);
 
     return {

@@ -41,28 +41,32 @@ const formatRoundScore = (entry: LeaderboardEntry): string => {
 };
 
 const formatTotalScore = (entry: LeaderboardEntry): string => {
-  // Calculate total score vs par: sum of completed rounds + current round
+  // Calculate total score vs par: sum of all rounds except the currently displayed round
   let totalScore = 0;
-  let hasCurrentRoundInProgress = false;
 
   if (entry.roundScores && entry.roundScores.length > 0) {
-    // Add completed rounds
+    // Find the highest round number with scores - that's the current/displayed round
+    const currentRoundNumber = Math.max(...entry.roundScores
+      .filter((r: { round: number; holeScores: (number | null)[]; }) => r.holeScores.some((s: number | null) => s !== null))
+      .map((r: { round: number; }) => r.round)
+    );
+
+    // Add all previous rounds to total (even if they have less than 18 holes)
     entry.roundScores.forEach((round: { round: number; holeScores: (number | null)[]; stablefordPoints: (number | null)[]; roundStrokes: number; roundStablefordPoints: number }) => {
-      if (round.roundStrokes > 0 && round.holeScores.filter((s: number | null) => s !== null).length === 18) {
-        // Only count completed rounds (18 holes)
-        const roundPar = 72; // Standard par for 18 holes
+      if (round.round < currentRoundNumber && round.roundStrokes > 0) {
+        // Calculate par for the number of holes actually played
+        const roundPar = round.holeScores.reduce((sum: number, score: number | null, idx: number) =>
+          score !== null ? sum + (entry.holePars?.[idx] || 4) : sum, 0
+        );
         totalScore += (round.roundStrokes - roundPar);
-      } else if (round.holeScores.filter((s: number | null) => s !== null).length > 0) {
-        // This round is in progress, so currentScore represents this round
-        hasCurrentRoundInProgress = true;
       }
     });
-  }
 
-  // Add current round score only if it's not already counted in roundScores
-  // or if there are no roundScores yet (first round in progress)
-  if (!hasCurrentRoundInProgress || !entry.roundScores || entry.roundScores.length === 0) {
+    // Add current round score
     totalScore += entry.currentScore;
+  } else {
+    // First round in progress
+    totalScore = entry.currentScore;
   }
 
   return formatScore(totalScore);
@@ -81,35 +85,37 @@ const formatRoundStableford = (entry: LeaderboardEntry): string => {
 };
 
 const formatTotalStableford = (entry: LeaderboardEntry): string => {
-  // Total stableford: sum of completed rounds - (36 * completed rounds) + current round stableford
+  // Total stableford: sum of all previous rounds vs par + current round vs par
   let totalStableford = 0;
-  let completedRounds = 0;
-  let hasCurrentRoundInProgress = false;
 
   if (entry.roundScores && entry.roundScores.length > 0) {
+    // Find the highest round number with scores - that's the current/displayed round
+    const currentRoundNumber = Math.max(...entry.roundScores
+      .filter((r: { round: number; holeScores: (number | null)[]; }) => r.holeScores.some((s: number | null) => s !== null))
+      .map((r: { round: number; }) => r.round)
+    );
+
+    // Add all previous rounds to total (even if they have less than 18 holes)
     entry.roundScores.forEach((round: { round: number; holeScores: (number | null)[]; stablefordPoints: (number | null)[]; roundStrokes: number; roundStablefordPoints: number }) => {
-      if (round.holeScores.filter((s: number | null) => s !== null).length === 18) {
-        totalStableford += round.roundStablefordPoints;
-        completedRounds += 1;
-      } else if (round.holeScores.filter((s: number | null) => s !== null).length > 0) {
-        // This round is in progress, so current stableford represents this round
-        hasCurrentRoundInProgress = true;
+      if (round.round < currentRoundNumber && round.roundStablefordPoints > 0) {
+        // Calculate expected points for the number of holes actually played
+        const holesPlayed = round.holeScores.filter((s: number | null) => s !== null).length;
+        const expectedPoints = holesPlayed * 2;
+        totalStableford += (round.roundStablefordPoints - expectedPoints);
       }
     });
-  }
 
-  // Subtract expected points for completed rounds (36 points per completed round)
-  const expectedCompletedPoints = completedRounds * 36;
-  totalStableford -= expectedCompletedPoints;
-
-  // Add current round stableford only if it's not already counted in roundScores
-  // or if there are no roundScores yet (first round in progress)
-  if (!hasCurrentRoundInProgress || !entry.roundScores || entry.roundScores.length === 0) {
+    // Add current round stableford
     const currentRoundPoints = entry.stablefordPoints?.slice(0, entry.holesCompleted)
       .reduce((sum: number, points: number | null) => (sum || 0) + (points || 0), 0) || 0;
     const currentExpected = entry.holesCompleted * 2;
-    const currentRoundStableford = currentRoundPoints - currentExpected;
-    totalStableford += currentRoundStableford;
+    totalStableford += (currentRoundPoints - currentExpected);
+  } else {
+    // First round in progress
+    const currentRoundPoints = entry.stablefordPoints?.slice(0, entry.holesCompleted)
+      .reduce((sum: number, points: number | null) => (sum || 0) + (points || 0), 0) || 0;
+    const currentExpected = entry.holesCompleted * 2;
+    totalStableford = currentRoundPoints - currentExpected;
   }
 
   if (totalStableford > 0) return `+${totalStableford}p`;

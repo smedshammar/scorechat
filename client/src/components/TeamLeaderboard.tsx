@@ -15,12 +15,19 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
   const [teamLeaderboard, setTeamLeaderboard] = useState<TeamLeaderboardEntry[]>([]);
   const [currentSidegame, setCurrentSidegame] = useState<TeamSidegame | null>(null);
   const [liveScorecard, setLiveScorecard] = useState<{ [hole: number]: { [teamId: string]: number } }>({});
+  const [allTimeTeamScores, setAllTimeTeamScores] = useState<{ [teamId: string]: { totalScore: number; rounds: number } }>({});
 
   useEffect(() => {
     if (tournament?.id) {
       loadCurrentSidegame();
     }
   }, [tournament?.id, currentRound]);
+
+  useEffect(() => {
+    if (currentSidegame) {
+      loadAllTimeTeamScores();
+    }
+  }, [currentSidegame, currentRound]);
 
   const loadCurrentSidegame = async () => {
     try {
@@ -56,6 +63,59 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
       }
     } catch (err) {
       console.error('Failed to load team sidegame:', err);
+    }
+  };
+
+  const loadAllTimeTeamScores = async () => {
+    try {
+      // Load the leaderboard to get player scores across all rounds
+      const response = await fetch(`/api/tournament/${tournament.id}/leaderboard`);
+      if (!response.ok) return;
+
+      const leaderboard = await response.json();
+
+      // Get teams from the sidegame
+      if (!currentSidegame?.teams) return;
+
+      // Calculate total scores for each team across all rounds
+      const teamScores: { [teamId: string]: { totalScore: number; rounds: number } } = {};
+
+      currentSidegame.teams.forEach(team => {
+        let teamTotalScore = 0;
+        let teamRoundsPlayed = 0;
+
+        team.players.forEach(playerName => {
+          // Find player in leaderboard
+          const playerEntry = leaderboard.find((entry: any) =>
+            entry.playerName.toLowerCase().includes(playerName.toLowerCase()) ||
+            playerName.toLowerCase().includes(entry.playerName.toLowerCase())
+          );
+
+          if (playerEntry && playerEntry.roundScores) {
+            // Sum scores from all completed rounds (rounds before current round)
+            playerEntry.roundScores.forEach((round: any) => {
+              if (round.round < currentRound && round.roundStrokes > 0) {
+                const roundPar = round.holeScores.reduce((sum: number, score: number | null, idx: number) =>
+                  score !== null ? sum + (playerEntry.holePars?.[idx] || 4) : sum, 0
+                );
+                teamTotalScore += (round.roundStrokes - roundPar);
+                if (teamRoundsPlayed === 0 || round.round > teamRoundsPlayed) {
+                  teamRoundsPlayed = round.round;
+                }
+              }
+            });
+          }
+        });
+
+        teamScores[team.id] = {
+          totalScore: teamTotalScore,
+          rounds: teamRoundsPlayed
+        };
+      });
+
+      setAllTimeTeamScores(teamScores);
+    } catch (err) {
+      console.error('Failed to load all-time team scores:', err);
     }
   };
 
@@ -117,7 +177,7 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
 
       {/* Team Points Leaderboard */}
       <div className="team-standings">
-        <h3>Team Standings</h3>
+        <h3>Team Standings - Round {currentRound}</h3>
         <div className="team-standings-grid">
           {teamLeaderboard.map(team => (
             <div key={team.teamId} className="team-standing">
@@ -136,6 +196,38 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
           ))}
         </div>
       </div>
+
+      {/* All-Time Team Status */}
+      {Object.keys(allTimeTeamScores).length > 0 && (
+        <div className="team-total-status">
+          <h3>Team Total Status (All Rounds)</h3>
+          <div className="team-total-grid">
+            {currentSidegame.teams
+              .map(team => ({
+                ...team,
+                ...allTimeTeamScores[team.id]
+              }))
+              .sort((a, b) => (a.totalScore || 0) - (b.totalScore || 0))
+              .map(team => (
+                <div key={team.id} className="team-total-item">
+                  <div
+                    className="team-color-indicator"
+                    style={{ backgroundColor: team.color }}
+                  ></div>
+                  <div className="team-total-info">
+                    <div className="team-name">{team.name}</div>
+                    <div className={`team-total-score ${(team.totalScore || 0) === 0 ? 'even' : (team.totalScore || 0) < 0 ? 'under' : 'over'}`}>
+                      {(team.totalScore || 0) === 0 ? 'E' : (team.totalScore || 0) > 0 ? `+${team.totalScore}` : team.totalScore}
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+          <p className="team-total-description">
+            Combined team score vs par across all completed rounds
+          </p>
+        </div>
+      )}
 
       {/* Live Sum-Match Scorecard */}
       {currentSidegame.gameType === 'sum-match' && holesPlayed.length > 0 && (
